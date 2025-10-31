@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+ import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import "./app.css";
 
 export default function App() {
@@ -178,67 +179,71 @@ export default function App() {
         </label>
       </div>
 
-      {/* Offer Modal */}
-      {showOffer && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-          <div className="bg-white text-black rounded-xl p-6 w-96 shadow-lg relative">
-            <button
-              onClick={closeOfferModal}
-              className="absolute top-2 right-3 text-gray-600 text-lg hover:text-black"
-            >
-              ✕
-            </button>
-            <h3 className="text-2xl font-bold mb-2 text-center">Make an Offer</h3>
-            <p className="text-sm mb-4 text-center">{offerPoster?.title}</p>
+      {/* Offer Modal — rendered via React Portal */}
+      {showOffer &&
+        ReactDOM.createPortal(
+          <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+            <div className="bg-white text-black rounded-xl p-6 w-96 shadow-lg relative">
+              <button
+                onClick={closeOfferModal}
+                className="absolute top-2 right-3 text-gray-600 text-lg hover:text-black"
+              >
+                ✕
+              </button>
+              <h3 className="text-2xl font-bold mb-2 text-center">
+                Make an Offer
+              </h3>
+              <p className="text-sm mb-4 text-center">{offerPoster?.title}</p>
 
-            <form onSubmit={submitOffer} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Your Name (optional)"
-                value={offerName}
-                onChange={(e) => setOfferName(e.target.value)}
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="email"
-                placeholder="Your Email (optional)"
-                value={offerEmail}
-                onChange={(e) => setOfferEmail(e.target.value)}
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="number"
-                placeholder="Offer Amount (USD)"
-                value={offerAmount}
-                onChange={(e) => setOfferAmount(e.target.value)}
-                required
-                className="w-full border p-2 rounded"
-              />
-              <textarea
-                placeholder="Add a note (optional)"
-                value={offerNote}
-                onChange={(e) => setOfferNote(e.target.value)}
-                className="w-full border p-2 rounded"
-              />
-              <div className="flex justify-end space-x-3 mt-4">
-                <button
-                  type="button"
-                  onClick={closeOfferModal}
-                  className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-                >
-                  Submit Offer ✅
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <form onSubmit={submitOffer} className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Your Name (optional)"
+                  value={offerName}
+                  onChange={(e) => setOfferName(e.target.value)}
+                  className="w-full border p-2 rounded"
+                />
+                <input
+                  type="email"
+                  placeholder="Your Email (optional)"
+                  value={offerEmail}
+                  onChange={(e) => setOfferEmail(e.target.value)}
+                  className="w-full border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  placeholder="Offer Amount (USD)"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  required
+                  className="w-full border p-2 rounded"
+                />
+                <textarea
+                  placeholder="Add a note (optional)"
+                  value={offerNote}
+                  onChange={(e) => setOfferNote(e.target.value)}
+                  className="w-full border p-2 rounded"
+                />
+                <div className="flex justify-end space-x-3 mt-4">
+                  <button
+                    type="button"
+                    onClick={closeOfferModal}
+                    className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                  >
+                    Submit Offer ✅
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
