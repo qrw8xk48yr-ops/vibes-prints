@@ -182,8 +182,8 @@ export default function App() {
       {/* Offer Modal — rendered via React Portal */}
       {showOffer &&
         ReactDOM.createPortal(
-          <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-            <div className="bg-white text-black rounded-xl p-6 w-96 shadow-lg relative">
+     <div className="offer-modal-overlay">
+  <div className="offer-modal-box">
               <button
                 onClick={closeOfferModal}
                 className="absolute top-2 right-3 text-gray-600 text-lg hover:text-black"
