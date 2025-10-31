@@ -4,7 +4,7 @@ import "./app.css";
 export default function App() {
   const posters = [
     { id: 1, title: "Goose – Red Rocks 2025", price: 45,
-      image: "https://upload.wikimedia.org/wikipedia/en/7/7d/Red_Rocks_Amphitheatre.jpg" },
+      image: "https://images.squarespace-cdn.com/content/v1/5456f6b8e4b06ba4b522aa78/1696285839481-76N759TRMN9PXEKTMCN1/REG_Foil_UNCUT.jpg?format=2500w" },
     { id: 2, title: "Phish – MSG 2024", price: 50,
       image: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Madison_Square_Garden_%28MSG%29_-_Full_Exterior_-_August_2021.jpg" },
     { id: 3, title: "Dead & Company – The Sphere", price: 55,
