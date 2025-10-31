@@ -1,0 +1,19 @@
+{
+  "name": "vibes-prints",
+  "version": "1.0.0",
+  "description": "Vibes & Prints – Jam Band Poster Shop 🎸",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "cd client && npm install && npm run build && cd .."
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "googleapis": "^136.0.0",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5"
+  },
+  "engines": { "node": "18" },
+  "author": "Vibes & Prints",
+  "license": "MIT"
+}
