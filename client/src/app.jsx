@@ -39,11 +39,6 @@ export default function App() {
     amount: "",
     note: "",
   });
-  const closeOffer = () => {
-    setShowOffer(false);
-    setOfferPoster(null);
-    setOfferForm({ name: "", email: "", amount: "", note: "" });
-  };
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("inventory") || "{}");
@@ -67,8 +62,6 @@ export default function App() {
         body: JSON.stringify({
           title: poster.title,
           price: poster.price,
-          name: "",
-          email: "",
           note: "PayPal",
         }),
       });
@@ -83,14 +76,22 @@ export default function App() {
     setShowOffer(true);
   };
 
+  const closeOffer = () => {
+    setShowOffer(false);
+    setOfferPoster(null);
+    setOfferForm({ name: "", email: "", amount: "", note: "" });
+  };
+
   const submitOffer = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // ✅ stops page refresh
     if (!offerPoster) return;
+
     const offer = parseFloat(offerForm.amount);
     if (Number.isNaN(offer) || offer <= 0) {
       alert("Enter a valid offer amount.");
       return;
     }
+
     try {
       const res = await fetch("/api/logOffer", {
         method: "POST",
@@ -103,14 +104,16 @@ export default function App() {
           note: offerForm.note,
         }),
       });
+
       const data = await res.json();
       if (data.ok) {
-        alert("Offer sent! We’ll be in touch.");
+        alert(`Offer of $${offer.toFixed(2)} submitted for ${offerPoster.title}`);
         closeOffer();
       } else {
-        alert("Could not submit offer. Please try again.");
+        alert("Server error. Please try again.");
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Network error submitting offer.");
     }
   };
@@ -177,7 +180,10 @@ export default function App() {
       {/* Offer Modal */}
       {showOffer && (
         <div className="modal-backdrop" onClick={closeOffer}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()} // ✅ keeps clicks inside modal from closing it
+          >
             <h3>Make an Offer</h3>
             <p className="muted">{offerPoster?.title}</p>
 
@@ -230,7 +236,11 @@ export default function App() {
               </label>
 
               <div className="row end">
-                <button type="button" className="btn outline" onClick={closeOffer}>
+                <button
+                  type="button"
+                  className="btn outline"
+                  onClick={closeOffer}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn">
