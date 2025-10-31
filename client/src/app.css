@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  font-family: 'Trebuchet MS', sans-serif;
+  background: linear-gradient(to bottom right, #ec4899, #8b5cf6, #6366f1);
+  color: white;
+  text-align: center;
+}
+
+button {
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
