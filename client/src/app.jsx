@@ -101,7 +101,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 text-white p-10 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 text-white p-10 text-center relative">
       <header className="mb-10">
         <div className="flex justify-center items-center mb-4">
           <img
@@ -178,7 +178,7 @@ export default function App() {
         </label>
       </div>
 
-      {/* Offer Modal (popup) */}
+      {/* Offer Modal */}
       {showOffer && (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
           <div className="bg-white text-black rounded-xl p-6 w-96 shadow-lg relative">
@@ -220,7 +220,6 @@ export default function App() {
                 onChange={(e) => setOfferNote(e.target.value)}
                 className="w-full border p-2 rounded"
               />
-
               <div className="flex justify-end space-x-3 mt-4">
                 <button
                   type="button"
