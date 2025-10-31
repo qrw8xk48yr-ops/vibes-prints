@@ -1,4 +1,3 @@
-// client/src/app.jsx
 import React, { useState, useEffect } from "react";
 import "./app.css";
 
@@ -33,12 +32,10 @@ export default function App() {
   // Offer modal state
   const [showOffer, setShowOffer] = useState(false);
   const [offerPoster, setOfferPoster] = useState(null);
-  const [offerForm, setOfferForm] = useState({
-    name: "",
-    email: "",
-    amount: "",
-    note: "",
-  });
+  const [offerAmount, setOfferAmount] = useState("");
+  const [offerName, setOfferName] = useState("");
+  const [offerEmail, setOfferEmail] = useState("");
+  const [offerNote, setOfferNote] = useState("");
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("inventory") || "{}");
@@ -55,17 +52,11 @@ export default function App() {
     )}`;
     window.open(link, "_blank");
     setInventory((prev) => ({ ...prev, [poster.id]: "sold" }));
-    try {
-      await fetch("/api/logSale", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: poster.title,
-          price: poster.price,
-          note: "PayPal",
-        }),
-      });
-    } catch {}
+    await fetch("/api/logSale", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: poster.title, price: poster.price }),
+    });
   };
 
   const handleRestock = (id) =>
@@ -79,84 +70,92 @@ export default function App() {
   const closeOffer = () => {
     setShowOffer(false);
     setOfferPoster(null);
-    setOfferForm({ name: "", email: "", amount: "", note: "" });
+    setOfferAmount("");
+    setOfferName("");
+    setOfferEmail("");
+    setOfferNote("");
   };
 
   const submitOffer = async (e) => {
-    e.preventDefault(); // ✅ stops page refresh
-    if (!offerPoster) return;
-
-    const offer = parseFloat(offerForm.amount);
-    if (Number.isNaN(offer) || offer <= 0) {
-      alert("Enter a valid offer amount.");
+    e.preventDefault();
+    if (!offerAmount || isNaN(offerAmount) || offerAmount <= 0) {
+      alert("Please enter a valid offer amount.");
       return;
     }
 
-    try {
-      const res = await fetch("/api/logOffer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: offerPoster.title,
-          offer,
-          name: offerForm.name,
-          email: offerForm.email,
-          note: offerForm.note,
-        }),
-      });
+    await fetch("/api/logOffer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: offerPoster.title,
+        offer: offerAmount,
+        name: offerName,
+        email: offerEmail,
+        note: offerNote,
+        timestamp: new Date().toISOString(),
+      }),
+    });
 
-      const data = await res.json();
-      if (data.ok) {
-        alert(`Offer of $${offer.toFixed(2)} submitted for ${offerPoster.title}`);
-        closeOffer();
-      } else {
-        alert("Server error. Please try again.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Network error submitting offer.");
-    }
+    alert(`Offer of $${offerAmount} submitted for ${offerPoster.title}!`);
+    closeOffer();
   };
 
   return (
-    <div className="page">
-      <header className="header">
-        <div className="brand">
+    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 text-white p-10 text-center">
+      <header className="mb-10">
+        <div className="flex justify-center items-center mb-4">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/8/80/Tie-dye_3.jpg"
             alt="swirl"
-            className="brand-img"
+            className="w-16 h-16 rounded-full border-4 border-white mr-3"
           />
-          <h1>Vibes & Prints</h1>
+          <h1 className="text-4xl font-bold drop-shadow-lg">Vibes & Prints</h1>
         </div>
-        <p className="tagline">Where the art keeps on jamming 🎸</p>
+        <p className="italic text-lg">Where the art keeps on jamming 🎸</p>
       </header>
 
-      <div className="grid">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {posters.map((p) => {
           const sold = inventory[p.id] === "sold";
           return (
-            <div key={p.id} className={`card ${sold ? "sold" : ""}`}>
-              <img src={p.image} alt={p.title} className="card-img" />
-              <h2 className="card-title">{p.title}</h2>
-              <p className="card-price">${p.price}</p>
-
+            <div
+              key={p.id}
+              className={`bg-white/10 backdrop-blur-lg rounded-xl p-4 ${
+                sold ? "opacity-50" : ""
+              }`}
+            >
+              <img
+                src={p.image}
+                alt={p.title}
+                className="w-full h-64 object-cover rounded-xl mb-4"
+              />
+              <h2 className="text-xl font-semibold mb-2">{p.title}</h2>
+              <p className="text-lg mb-4">${p.price}</p>
               {sold ? (
                 <div>
-                  <p className="sold-text">Sold Out 🎟️</p>
+                  <p className="font-bold text-red-300 mb-2">Sold Out 🎟️</p>
                   {adminMode && (
-                    <button className="btn green" onClick={() => handleRestock(p.id)}>
+                    <button
+                      onClick={() => handleRestock(p.id)}
+                      className="bg-green-500 px-3 py-1 rounded text-white"
+                    >
                       Restock
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="row">
-                  <button className="btn" onClick={() => handleBuy(p)}>
+                <div className="flex flex-col space-y-2">
+                  <button
+                    onClick={() => handleBuy(p)}
+                    className="bg-white/30 px-4 py-2 rounded hover:bg-white/40 transition"
+                  >
                     Buy Now
                   </button>
-                  <button className="btn outline" onClick={() => openOffer(p)}>
-                    Make an Offer
+                  <button
+                    onClick={() => openOffer(p)}
+                    className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition"
+                  >
+                    Make an Offer 💬
                   </button>
                 </div>
               )}
@@ -165,86 +164,73 @@ export default function App() {
         })}
       </div>
 
-      {/* Admin toggle */}
-      <div className="admin">
-        <label className="admin-label">
+      {/* Admin Mode toggle */}
+      <div className="fixed bottom-4 left-4">
+        <label className="flex items-center space-x-2">
           <input
             type="checkbox"
             checked={adminMode}
             onChange={(e) => setAdminMode(e.target.checked)}
           />
-          <span>Admin Mode</span>
+          <span className="text-sm">Admin Mode</span>
         </label>
       </div>
 
-      {/* Offer Modal */}
+      {/* Offer modal */}
       {showOffer && (
-        <div className="modal-backdrop" onClick={closeOffer}>
+        <div
+          className="fixed inset-0 bg-black/70 flex justify-center items-center"
+          onClick={closeOffer}
+        >
           <div
-            className="modal"
-            onClick={(e) => e.stopPropagation()} // ✅ keeps clicks inside modal from closing it
+            className="bg-white text-black rounded-xl p-6 w-96 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
           >
-            <h3>Make an Offer</h3>
-            <p className="muted">{offerPoster?.title}</p>
+            <h3 className="text-2xl font-bold mb-2">Make an Offer</h3>
+            <p className="text-sm mb-4">{offerPoster?.title}</p>
 
-            <form onSubmit={submitOffer} className="form">
-              <label>
-                Your Name (optional)
-                <input
-                  type="text"
-                  value={offerForm.name}
-                  onChange={(e) =>
-                    setOfferForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                />
-              </label>
-
-              <label>
-                Email (optional)
-                <input
-                  type="email"
-                  value={offerForm.email}
-                  onChange={(e) =>
-                    setOfferForm((f) => ({ ...f, email: e.target.value }))
-                  }
-                />
-              </label>
-
-              <label>
-                Offer Amount (USD) *
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g., 40"
-                  value={offerForm.amount}
-                  onChange={(e) =>
-                    setOfferForm((f) => ({ ...f, amount: e.target.value }))
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Note (optional)
-                <textarea
-                  rows="3"
-                  value={offerForm.note}
-                  onChange={(e) =>
-                    setOfferForm((f) => ({ ...f, note: e.target.value }))
-                  }
-                />
-              </label>
-
-              <div className="row end">
+            <form onSubmit={submitOffer} className="space-y-3">
+              <input
+                type="text"
+                placeholder="Your Name (optional)"
+                value={offerName}
+                onChange={(e) => setOfferName(e.target.value)}
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="email"
+                placeholder="Your Email (optional)"
+                value={offerEmail}
+                onChange={(e) => setOfferEmail(e.target.value)}
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="number"
+                placeholder="Offer Amount (USD)"
+                value={offerAmount}
+                onChange={(e) => setOfferAmount(e.target.value)}
+                required
+                className="w-full border p-2 rounded"
+              />
+              <textarea
+                placeholder="Add a note (optional)"
+                value={offerNote}
+                onChange={(e) => setOfferNote(e.target.value)}
+                className="w-full border p-2 rounded"
+              />
+              <div className="flex justify-between mt-4">
                 <button
                   type="button"
-                  className="btn outline"
                   onClick={closeOffer}
+                  className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn">
-                  Submit Offer
+                <button
+                  type="submit"
+                  className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                >
+                  Submit Offer ✅
                 </button>
               </div>
             </form>
