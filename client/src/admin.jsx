@@ -5,6 +5,9 @@ export default function Admin() {
   const [sales, setSales] = useState([]);
   const [counteroffers, setCounteroffers] = useState([]);
   const [tab, setTab] = useState("offers");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [counterAmount, setCounterAmount] = useState("");
+  const [counterMessage, setCounterMessage] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -18,18 +21,117 @@ export default function Admin() {
     });
   }, []);
 
+  const sendCounteroffer = async (offer) => {
+    if (!counterAmount) {
+      alert("Please enter a counteroffer amount.");
+      return;
+    }
+
+    await fetch("/api/logCounteroffer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: offer.title,
+        amount: counterAmount,
+        message: counterMessage,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    alert(`Counteroffer of $${counterAmount} sent for ${offer.title}!`);
+    setCounterAmount("");
+    setCounterMessage("");
+    setReplyingTo(null);
+  };
+
   const renderTable = (data, type) => {
     if (!data.length)
       return <p className="text-center py-10 text-gray-500">No {type} yet.</p>;
 
+    if (type === "offers") {
+      return (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm border-collapse">
+            <thead className="bg-gray-200 text-left">
+              <tr>
+                <th className="p-3 border-b">Poster</th>
+                <th className="p-3 border-b">Offer ($)</th>
+                <th className="p-3 border-b">Name</th>
+                <th className="p-3 border-b">Email</th>
+                <th className="p-3 border-b">Note</th>
+                <th className="p-3 border-b">Time</th>
+                <th className="p-3 border-b text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, i) => (
+                <tr key={i} className="odd:bg-gray-50 even:bg-white">
+                  <td className="p-3 border-b">{row.title}</td>
+                  <td className="p-3 border-b">${row.offer}</td>
+                  <td className="p-3 border-b">{row.name || "—"}</td>
+                  <td className="p-3 border-b">{row.email || "—"}</td>
+                  <td className="p-3 border-b">{row.note || "—"}</td>
+                  <td className="p-3 border-b">
+                    {new Date(row.timestamp).toLocaleString()}
+                  </td>
+                  <td className="p-3 border-b text-center">
+                    <button
+                      onClick={() => setReplyingTo(row)}
+                      className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
+                    >
+                      Counteroffer ↩️
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {replyingTo && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-96 shadow-lg relative">
+                <button
+                  onClick={() => setReplyingTo(null)}
+                  className="absolute top-2 right-3 text-gray-500 hover:text-black text-lg"
+                >
+                  ✕
+                </button>
+                <h3 className="text-xl font-bold mb-2">
+                  Counteroffer for {replyingTo.title}
+                </h3>
+                <input
+                  type="number"
+                  placeholder="Counteroffer amount ($)"
+                  value={counterAmount}
+                  onChange={(e) => setCounterAmount(e.target.value)}
+                  className="border p-2 rounded w-full mb-3"
+                />
+                <textarea
+                  placeholder="Optional message"
+                  value={counterMessage}
+                  onChange={(e) => setCounterMessage(e.target.value)}
+                  className="border p-2 rounded w-full mb-3"
+                  rows={3}
+                />
+                <button
+                  onClick={() => sendCounteroffer(replyingTo)}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
+                >
+                  Submit Counteroffer ✅
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Counteroffers or sales view
     const columns = {
-      offers: ["Poster", "Offer ($)", "Name", "Email", "Note", "Time"],
       counteroffers: ["Poster", "Counter ($)", "Message", "Time"],
       sales: ["Poster", "Price ($)", "Time"],
     };
-
     const keys = {
-      offers: ["title", "offer", "name", "email", "note", "timestamp"],
       counteroffers: ["title", "amount", "message", "timestamp"],
       sales: ["title", "price", "timestamp"],
     };
@@ -90,6 +192,16 @@ export default function Admin() {
         {tab === "offers" && renderTable(offers, "offers")}
         {tab === "counteroffers" && renderTable(counteroffers, "counteroffers")}
         {tab === "sales" && renderTable(sales, "sales")}
+      </div>
+
+      {/* Back to Store Button */}
+      <div className="text-center mt-8">
+        <a
+          href="/"
+          className="inline-block bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          ← Back to Store
+        </a>
       </div>
     </div>
   );
