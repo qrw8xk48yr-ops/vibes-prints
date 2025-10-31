@@ -1,6 +1,39 @@
 import React, { useEffect, useState } from "react";
 
 export default function Admin() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [password, setPassword] = useState("");
+
+  if (!loggedIn) {
+    const tryLogin = () => {
+      if (password === "M@keM@ney2025!!!") {
+        setLoggedIn(true);
+      } else {
+        alert("Wrong password!");
+      }
+    };
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded shadow-md w-80 text-center">
+          <h2 className="text-2xl font-bold mb-4">Admin Login</h2>
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border rounded p-2 w-full mb-4"
+          />
+          <button
+            onClick={tryLogin}
+            className="bg-purple-600 text-white px-4 py-2 rounded w-full hover:bg-purple-700"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
   const [offers, setOffers] = useState([]);
   const [sales, setSales] = useState([]);
   const [counteroffers, setCounteroffers] = useState([]);
