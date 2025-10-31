@@ -29,7 +29,7 @@ export default function App() {
   const [inventory, setInventory] = useState({});
   const [adminMode, setAdminMode] = useState(false);
 
-  // Offer modal state
+  // Offer modal states
   const [showOffer, setShowOffer] = useState(false);
   const [offerPoster, setOfferPoster] = useState(null);
   const [offerAmount, setOfferAmount] = useState("");
@@ -62,12 +62,12 @@ export default function App() {
   const handleRestock = (id) =>
     setInventory((prev) => ({ ...prev, [id]: "available" }));
 
-  const openOffer = (poster) => {
+  const openOfferModal = (poster) => {
     setOfferPoster(poster);
     setShowOffer(true);
   };
 
-  const closeOffer = () => {
+  const closeOfferModal = () => {
     setShowOffer(false);
     setOfferPoster(null);
     setOfferAmount("");
@@ -97,7 +97,7 @@ export default function App() {
     });
 
     alert(`Offer of $${offerAmount} submitted for ${offerPoster.title}!`);
-    closeOffer();
+    closeOfferModal();
   };
 
   return (
@@ -114,6 +114,7 @@ export default function App() {
         <p className="italic text-lg">Where the art keeps on jamming 🎸</p>
       </header>
 
+      {/* Posters grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {posters.map((p) => {
           const sold = inventory[p.id] === "sold";
@@ -131,6 +132,7 @@ export default function App() {
               />
               <h2 className="text-xl font-semibold mb-2">{p.title}</h2>
               <p className="text-lg mb-4">${p.price}</p>
+
               {sold ? (
                 <div>
                   <p className="font-bold text-red-300 mb-2">Sold Out 🎟️</p>
@@ -144,16 +146,16 @@ export default function App() {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col space-y-2">
+                <div className="space-y-2">
                   <button
                     onClick={() => handleBuy(p)}
-                    className="bg-white/30 px-4 py-2 rounded hover:bg-white/40 transition"
+                    className="bg-white/30 px-4 py-2 rounded hover:bg-white/40 transition w-full"
                   >
                     Buy Now
                   </button>
                   <button
-                    onClick={() => openOffer(p)}
-                    className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition"
+                    onClick={() => openOfferModal(p)}
+                    className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition w-full"
                   >
                     Make an Offer 💬
                   </button>
@@ -164,7 +166,7 @@ export default function App() {
         })}
       </div>
 
-      {/* Admin Mode toggle */}
+      {/* Admin toggle */}
       <div className="fixed bottom-4 left-4">
         <label className="flex items-center space-x-2">
           <input
@@ -176,18 +178,18 @@ export default function App() {
         </label>
       </div>
 
-      {/* Offer modal */}
+      {/* Offer Modal (popup) */}
       {showOffer && (
-        <div
-          className="fixed inset-0 bg-black/70 flex justify-center items-center"
-          onClick={closeOffer}
-        >
-          <div
-            className="bg-white text-black rounded-xl p-6 w-96 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-2xl font-bold mb-2">Make an Offer</h3>
-            <p className="text-sm mb-4">{offerPoster?.title}</p>
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+          <div className="bg-white text-black rounded-xl p-6 w-96 shadow-lg relative">
+            <button
+              onClick={closeOfferModal}
+              className="absolute top-2 right-3 text-gray-600 text-lg hover:text-black"
+            >
+              ✕
+            </button>
+            <h3 className="text-2xl font-bold mb-2 text-center">Make an Offer</h3>
+            <p className="text-sm mb-4 text-center">{offerPoster?.title}</p>
 
             <form onSubmit={submitOffer} className="space-y-3">
               <input
@@ -218,10 +220,11 @@ export default function App() {
                 onChange={(e) => setOfferNote(e.target.value)}
                 className="w-full border p-2 rounded"
               />
-              <div className="flex justify-between mt-4">
+
+              <div className="flex justify-end space-x-3 mt-4">
                 <button
                   type="button"
-                  onClick={closeOffer}
+                  onClick={closeOfferModal}
                   className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
                 >
                   Cancel
