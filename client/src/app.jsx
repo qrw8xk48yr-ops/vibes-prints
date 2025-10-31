@@ -244,6 +244,15 @@ export default function App() {
           </div>,
           document.body
         )}
-    </div>
-  );
+{/* Admin Dashboard shortcut */}
+{adminMode && (
+  <a
+    href="/admin"
+    className="fixed bottom-4 right-4 bg-white text-black px-4 py-2 rounded shadow hover:bg-gray-200"
+  >
+    Admin Dashboard 📊
+  </a>
+)}
+</div>
+);
 }
