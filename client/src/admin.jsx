@@ -4,6 +4,7 @@ export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
 
+  // --- LOGIN SCREEN ---
   if (!loggedIn) {
     const tryLogin = () => {
       if (password === "M@keM@ney2025!!!") {
@@ -34,6 +35,8 @@ export default function Admin() {
       </div>
     );
   }
+
+  // --- ADMIN DASHBOARD STATE ---
   const [offers, setOffers] = useState([]);
   const [sales, setSales] = useState([]);
   const [counteroffers, setCounteroffers] = useState([]);
@@ -42,6 +45,7 @@ export default function Admin() {
   const [counterAmount, setCounterAmount] = useState("");
   const [counterMessage, setCounterMessage] = useState("");
 
+  // --- LOAD DATA ---
   useEffect(() => {
     Promise.all([
       fetch("/offers.json").then((r) => r.json()).catch(() => []),
@@ -54,6 +58,7 @@ export default function Admin() {
     });
   }, []);
 
+  // --- SEND COUNTEROFFER ---
   const sendCounteroffer = async (offer) => {
     if (!counterAmount) {
       alert("Please enter a counteroffer amount.");
@@ -77,6 +82,7 @@ export default function Admin() {
     setReplyingTo(null);
   };
 
+  // --- TABLE RENDERING FUNCTION ---
   const renderTable = (data, type) => {
     if (!data.length)
       return <p className="text-center py-10 text-gray-500">No {type} yet.</p>;
@@ -120,6 +126,7 @@ export default function Admin() {
             </tbody>
           </table>
 
+          {/* COUNTEROFFER MODAL */}
           {replyingTo && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 w-96 shadow-lg relative">
@@ -159,7 +166,7 @@ export default function Admin() {
       );
     }
 
-    // Counteroffers or sales view
+    // --- COUNTEROFFERS & SALES TABLES ---
     const columns = {
       counteroffers: ["Poster", "Counter ($)", "Message", "Time"],
       sales: ["Poster", "Price ($)", "Time"],
@@ -199,11 +206,12 @@ export default function Admin() {
     );
   };
 
+  // --- MAIN RETURN (AFTER LOGIN) ---
   return (
     <div className="min-h-screen bg-gray-100 text-black p-10">
       <h1 className="text-3xl font-bold mb-8 text-center">Admin Dashboard</h1>
 
-      {/* Tabs */}
+      {/* TABS */}
       <div className="flex justify-center space-x-4 mb-8">
         {["offers", "counteroffers", "sales"].map((t) => (
           <button
@@ -220,14 +228,14 @@ export default function Admin() {
         ))}
       </div>
 
-      {/* Tables */}
+      {/* TABLE VIEW */}
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
         {tab === "offers" && renderTable(offers, "offers")}
         {tab === "counteroffers" && renderTable(counteroffers, "counteroffers")}
         {tab === "sales" && renderTable(sales, "sales")}
       </div>
 
-      {/* Back to Store Button */}
+      {/* BACK BUTTON */}
       <div className="text-center mt-8">
         <a
           href="/"
