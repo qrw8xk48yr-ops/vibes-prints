@@ -45,17 +45,31 @@ export default function Admin() {
   const [counterAmount, setCounterAmount] = useState("");
   const [counterMessage, setCounterMessage] = useState("");
 
-  // --- LOAD DATA ---
+  // --- LOAD DATA SAFELY ---
   useEffect(() => {
-    Promise.all([
-      fetch("/offers.json").then((r) => r.json()).catch(() => []),
-      fetch("/sales.json").then((r) => r.json()).catch(() => []),
-      fetch("/counteroffers.json").then((r) => r.json()).catch(() => []),
-    ]).then(([o, s, c]) => {
+    const safeFetch = async (url) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to load ${url}`);
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.warn(`${url} missing or invalid:`, e.message);
+        return [];
+      }
+    };
+
+    (async () => {
+      const [o, s, c] = await Promise.all([
+        safeFetch("/offers.json"),
+        safeFetch("/sales.json"),
+        safeFetch("/counteroffers.json"),
+      ]);
       setOffers(o);
       setSales(s);
       setCounteroffers(c);
-    });
+      console.log("Loaded data:", { offers: o.length, sales: s.length, counteroffers: c.length });
+    })();
   }, []);
 
   // --- SEND COUNTEROFFER ---
@@ -65,26 +79,29 @@ export default function Admin() {
       return;
     }
 
-    await fetch("/api/logCounteroffer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: offer.title,
-        amount: counterAmount,
-        message: counterMessage,
-        timestamp: new Date().toISOString(),
-      }),
-    });
-
-    alert(`Counteroffer of $${counterAmount} sent for ${offer.title}!`);
-    setCounterAmount("");
-    setCounterMessage("");
-    setReplyingTo(null);
+    try {
+      await fetch("/api/logCounteroffer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: offer.title,
+          amount: counterAmount,
+          message: counterMessage,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+      alert(`Counteroffer of $${counterAmount} sent for ${offer.title}!`);
+      setCounterAmount("");
+      setCounterMessage("");
+      setReplyingTo(null);
+    } catch (e) {
+      alert("Error sending counteroffer: " + e.message);
+    }
   };
 
   // --- TABLE RENDERING FUNCTION ---
   const renderTable = (data, type) => {
-    if (!data.length)
+    if (!Array.isArray(data) || data.length === 0)
       return <p className="text-center py-10 text-gray-500">No {type} yet.</p>;
 
     if (type === "offers") {
@@ -105,13 +122,15 @@ export default function Admin() {
             <tbody>
               {data.map((row, i) => (
                 <tr key={i} className="odd:bg-gray-50 even:bg-white">
-                  <td className="p-3 border-b">{row.title}</td>
-                  <td className="p-3 border-b">${row.offer}</td>
+                  <td className="p-3 border-b">{row.title || "—"}</td>
+                  <td className="p-3 border-b">${row.offer || "—"}</td>
                   <td className="p-3 border-b">{row.name || "—"}</td>
                   <td className="p-3 border-b">{row.email || "—"}</td>
                   <td className="p-3 border-b">{row.note || "—"}</td>
                   <td className="p-3 border-b">
-                    {new Date(row.timestamp).toLocaleString()}
+                    {row.timestamp
+                      ? new Date(row.timestamp).toLocaleString()
+                      : "—"}
                   </td>
                   <td className="p-3 border-b text-center">
                     <button
@@ -166,22 +185,22 @@ export default function Admin() {
       );
     }
 
-    // --- COUNTEROFFERS & SALES TABLES ---
-    const columns = {
-      counteroffers: ["Poster", "Counter ($)", "Message", "Time"],
-      sales: ["Poster", "Price ($)", "Time"],
-    };
-    const keys = {
-      counteroffers: ["title", "amount", "message", "timestamp"],
-      sales: ["title", "price", "timestamp"],
-    };
+    // COUNTEROFFERS + SALES TABLE
+    const columns =
+      type === "counteroffers"
+        ? ["Poster", "Counter ($)", "Message", "Time"]
+        : ["Poster", "Price ($)", "Time"];
+    const keys =
+      type === "counteroffers"
+        ? ["title", "amount", "message", "timestamp"]
+        : ["title", "price", "timestamp"];
 
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm border-collapse">
           <thead className="bg-gray-200 text-left">
             <tr>
-              {columns[type].map((c) => (
+              {columns.map((c) => (
                 <th key={c} className="p-3 border-b">
                   {c}
                 </th>
@@ -191,7 +210,7 @@ export default function Admin() {
           <tbody>
             {data.map((row, i) => (
               <tr key={i} className="odd:bg-gray-50 even:bg-white">
-                {keys[type].map((k) => (
+                {keys.map((k) => (
                   <td key={k} className="p-3 border-b">
                     {k === "timestamp"
                       ? new Date(row[k]).toLocaleString()
